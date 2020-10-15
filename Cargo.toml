@@ -1,6 +1,6 @@
 [package]
 name = "hashf"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["colvin <39858617+colvin@users.noreply.github.com>"]
 edition = "2018"
 
