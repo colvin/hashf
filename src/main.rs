@@ -175,7 +175,20 @@ fn main() {
                     continue;
                 }
 
-                // TODO: copy or move
+                // We always copy, because renaming doesn't work across filesystems.  In copy
+                // mode, we just don't remove afterwards.
+                if let Err(e) = fs::copy(file, &new_filename) {
+                    error!("failed to copy to {}: {}", new_filename, e);
+                    exit_code = 1;
+                    continue;
+                }
+                if !matches.is_present("copy") {
+                    if let Err(e) = fs::remove_file(file) {
+                        error!("failed to remove {}: {}", file, e);
+                        exit_code = 1;
+                        continue;
+                    }
+                }
             }
             Err(e) => {
                 error!("{}: {}", file, e);
