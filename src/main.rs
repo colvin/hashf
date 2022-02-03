@@ -44,7 +44,14 @@ fn main() {
             Arg::with_name("force")
                 .short("f")
                 .long("force")
+                .conflicts_with("no-trim")
                 .help("overwrite existing files"),
+        )
+        .arg(
+            Arg::with_name("no-trim")
+                .long("no-trim")
+                .conflicts_with("force")
+                .help("do not delete source files when output files have collided"),
         )
         .arg(
             Arg::with_name("quiet")
@@ -162,8 +169,18 @@ fn main() {
                 // Ensure new file doesn't exist.
                 if fs::metadata(&new_filename).is_ok() {
                     if !matches.is_present("force") {
-                        error!("already exists: {} for {}", new_filename, file);
-                        exit_code = 1;
+                        if matches.is_present("no-trim") {
+                            error!("already exists: {} for {}", new_filename, file);
+                        } else {
+                            error!(
+                                "already exists: {}, trimming source: {}",
+                                new_filename, file
+                            );
+                            if let Err(e) = fs::remove_file(file) {
+                                error!("failed to remove file {}: {}", file, e);
+                                exit_code = 1;
+                            }
+                        }
                         continue;
                     }
                 }
